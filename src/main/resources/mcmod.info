@@ -1,0 +1,19 @@
+[
+  {
+    "modid": "hardcoreinthedark",
+    "name": "HardcoreInTheDark",
+    "description": "Dying in the dark makes the death a hardcore one!",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "DoubleDoorDev",
+      "Claycorp"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
