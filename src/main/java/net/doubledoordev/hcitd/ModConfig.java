@@ -1,4 +1,4 @@
-package net.doubledoordev;
+package net.doubledoordev.hcitd;
 
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
@@ -6,7 +6,7 @@ import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-import static net.doubledoordev.HardcoreInTheDark.MOD_ID;
+import static net.doubledoordev.hcitd.HardcoreInTheDark.MOD_ID;
 
 @Config(modid = MOD_ID, category = "All")
 @Mod.EventBusSubscriber(modid = MOD_ID)
