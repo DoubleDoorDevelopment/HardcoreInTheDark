@@ -1,5 +1,8 @@
 package net.doubledoordev.hcitd;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
@@ -12,10 +15,11 @@ import static net.doubledoordev.hcitd.HardcoreInTheDark.MOD_ID;
 @Mod.EventBusSubscriber(modid = MOD_ID)
 public class ModConfig
 {
-    @Config.Comment({"This level and below are unsafe, dying in this light level acts like hardcore."
+    @Config.Comment({"This level and below are unsafe, dying in or below this light level acts like hardcore in all dimensions!.",
+            "Set to 0 if you want specific dimensions only to apply the effect."
     })
     @Config.RangeInt(min = 0, max = 16)
-    public static int unsafeLight = 7;
+    public static int globalUnsafeLight = 7;
 
     @Config.Comment({"Message Player gets after dying in an unsafe light level."
     })
@@ -38,6 +42,17 @@ public class ModConfig
     })
     @Config.RangeInt(min = 0, max = Integer.MAX_VALUE)
     public static int banTime = 3600;
+
+    @Config.Comment({"This level and below are unsafe, dying in or below this light level acts like hardcore only in the dimensions listed.",
+            "THIS OVERRIDES THE GLOBAL VALUE FOR THAT DIM!"
+    })
+    public static Map<Integer, Integer> unsafeLightDimOverride = new HashMap<>();
+
+    static
+    {
+        unsafeLightDimOverride.put(0, 7);
+        unsafeLightDimOverride.put(-1, 4);
+    }
 
     @Config.Comment({"Message used when player is kicked on the ban."
     })

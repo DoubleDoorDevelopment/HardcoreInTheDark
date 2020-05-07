@@ -29,7 +29,7 @@ public class HardcoreInTheDark
 {
     public static final String MOD_ID = "hardcoreinthedark";
     public static final String MOD_NAME = "Hardcore In The Dark";
-    public static final String VERSION = "1.0.1";
+    public static final String VERSION = "1.1.0";
 
     /**
      * This is the instance of your mod as created by Forge. It will never be null.
@@ -55,7 +55,13 @@ public class HardcoreInTheDark
         if (event.getEntity() instanceof EntityPlayerMP && event.getEntityLiving().getHealth() <= event.getAmount())
         {
             int lightLevel = event.getEntityLiving().getEntityWorld().getLight(event.getEntityLiving().getPosition(), false);
-            if (lightLevel <= ModConfig.unsafeLight)
+            int dimID = event.getEntityLiving().dimension;
+            int lightLevelTrigger = ModConfig.globalUnsafeLight;
+
+            if (ModConfig.unsafeLightDimOverride.containsKey(dimID))
+                lightLevelTrigger = ModConfig.unsafeLightDimOverride.get(dimID);
+
+            if (lightLevel <= lightLevelTrigger)
                 //True = SP.
                 if (event.getEntity().world.isRemote)
                 {
@@ -64,48 +70,45 @@ public class HardcoreInTheDark
                 }
                 else
                 {
-                    if (lightLevel <= ModConfig.unsafeLight)
+                    MinecraftServer server = event.getEntityLiving().getServer();
+                    EntityPlayerMP playerMP = (EntityPlayerMP) event.getEntity();
+                    UUID playerUUID = playerMP.getUniqueID();
+
+                    if (ModConfig.shouldSpectateOnServer)
                     {
-                        MinecraftServer server = event.getEntityLiving().getServer();
-                        EntityPlayerMP playerMP = (EntityPlayerMP) event.getEntity();
-                        UUID playerUUID = playerMP.getUniqueID();
+                        playerMP.setGameType(GameType.SPECTATOR);
+                        server.getWorld(playerMP.dimension).getGameRules().setOrCreateGameRule("spectatorsGenerateChunks", "false");
 
-                        if (ModConfig.shouldSpectateOnServer)
-                        {
-                            playerMP.setGameType(GameType.SPECTATOR);
-                            server.getWorld(playerMP.dimension).getGameRules().setOrCreateGameRule("spectatorsGenerateChunks", "false");
+                        ((EntityPlayerMP) event.getEntity()).sendStatusMessage(new TextComponentString(ModConfig.deathMessage), false);
+                    }
 
-                            ((EntityPlayerMP) event.getEntity()).sendStatusMessage(new TextComponentString(ModConfig.deathMessage), false);
-                        }
+                    if (ModConfig.shouldBanOnServer)
+                    {
+                        Date thisInstant = new Date();
+                        Date endDate = new Date(ModConfig.banTime * 1000 + thisInstant.getTime());
+                        UserListBansEntry userlistbansentry =
+                                new UserListBansEntry(((EntityPlayerMP) event.getEntity()).getGameProfile(), thisInstant, "HardcoreInTheDark", endDate,
+                                        String.format(ModConfig.banMessage, lightLevel));
+                        server.getPlayerList().getBannedPlayers().addEntry(userlistbansentry);
 
-                        if (ModConfig.shouldBanOnServer)
-                        {
-                            Date thisInstant = new Date();
-                            Date endDate = new Date(ModConfig.banTime * 1000 + thisInstant.getTime());
-                            UserListBansEntry userlistbansentry =
-                                    new UserListBansEntry(((EntityPlayerMP) event.getEntity()).getGameProfile(), thisInstant, "HardcoreInTheDark", endDate,
-                                            String.format(ModConfig.banMessage, lightLevel));
-                            server.getPlayerList().getBannedPlayers().addEntry(userlistbansentry);
+                        playerMP.connection.disconnect(new TextComponentString(ModConfig.disconnectMessage));
+                    }
 
-                            playerMP.connection.disconnect(new TextComponentString(ModConfig.disconnectMessage));
-                        }
+                    //This whole mod is fairly simple to understand except why this is all done.
+                    if (ModConfig.shouldDeletePlayerData)
+                    {
+                        // We need an unobtainable UUID to make a player with as we don't want to fuck up everyone.
+                        GameProfile emptyProfile = new GameProfile(null, "YouFoundAnEasterEgg<3");
+                        EntityPlayerMP emptyPlayer = new EntityPlayerMP(server, server.getWorld(0), emptyProfile, new PlayerInteractionManager(server.getWorld(0)));
+                        // Then because you can't directly delete player data we indirectly delete it by copying a non-existing player's fresh data over our player.
+                        playerMP.copyFrom(emptyPlayer, false);
 
-                        //This whole mod is fairly simple to understand except why this is all done.
-                        if (ModConfig.shouldDeletePlayerData)
-                        {
-                            // We need an unobtainable UUID to make a player with as we don't want to fuck up everyone.
-                            GameProfile emptyProfile = new GameProfile(null, "YouFoundAnEasterEgg<3");
-                            EntityPlayerMP emptyPlayer = new EntityPlayerMP(server, server.getWorld(0), emptyProfile, new PlayerInteractionManager(server.getWorld(0)));
-                            // Then because you can't directly delete player data we indirectly delete it by copying a non-existing player's fresh data over our player.
-                            playerMP.copyFrom(emptyPlayer, false);
-
-                            //Then because advancements are part of the content these days and add things to the player data we need to clear these also otherwise...
-                            // the recipe book breaks and you can't get stuff back for it. So we direct delete the file and then force a reload, due to the file not existing a blank is created.
-                            File advancementPlayerData = new File(server.getWorld(0).getSaveHandler().getWorldDirectory(), "advancements/" + playerUUID + ".json");
-                            advancementPlayerData.delete();
-                            playerMP.getAdvancements().reload();
-                            //Absolute fukin magic this is...
-                        }
+                        //Then because advancements are part of the content these days and add things to the player data we need to clear these also otherwise...
+                        // the recipe book breaks and you can't get stuff back for it. So we direct delete the file and then force a reload, due to the file not existing a blank is created.
+                        File advancementPlayerData = new File(server.getWorld(0).getSaveHandler().getWorldDirectory(), "advancements/" + playerUUID + ".json");
+                        advancementPlayerData.delete();
+                        playerMP.getAdvancements().reload();
+                        //Absolute fukin magic this is...
                     }
                 }
         }
