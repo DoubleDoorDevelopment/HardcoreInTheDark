@@ -29,7 +29,7 @@ public class HardcoreInTheDark
 {
     public static final String MOD_ID = "hardcoreinthedark";
     public static final String MOD_NAME = "Hardcore In The Dark";
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.1.1";
 
     /**
      * This is the instance of your mod as created by Forge. It will never be null.
@@ -58,8 +58,8 @@ public class HardcoreInTheDark
             int dimID = event.getEntityLiving().dimension;
             int lightLevelTrigger = ModConfig.globalUnsafeLight;
 
-            if (ModConfig.unsafeLightDimOverride.containsKey(dimID))
-                lightLevelTrigger = ModConfig.unsafeLightDimOverride.get(dimID);
+            if (ModConfig.unsafeLightDimOverride.containsKey(String.valueOf(dimID)))
+                lightLevelTrigger = ModConfig.unsafeLightDimOverride.get(String.valueOf(dimID));
 
             if (lightLevel <= lightLevelTrigger)
                 //True = SP.

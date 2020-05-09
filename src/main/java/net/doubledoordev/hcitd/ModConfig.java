@@ -46,12 +46,12 @@ public class ModConfig
     @Config.Comment({"This level and below are unsafe, dying in or below this light level acts like hardcore only in the dimensions listed.",
             "THIS OVERRIDES THE GLOBAL VALUE FOR THAT DIM!"
     })
-    public static Map<Integer, Integer> unsafeLightDimOverride = new HashMap<>();
+    public static final Map<String, Integer> unsafeLightDimOverride = new HashMap<>();
 
     static
     {
-        unsafeLightDimOverride.put(0, 7);
-        unsafeLightDimOverride.put(-1, 4);
+        unsafeLightDimOverride.put("0", 7);
+        unsafeLightDimOverride.put("-1", 9);
     }
 
     @Config.Comment({"Message used when player is kicked on the ban."
